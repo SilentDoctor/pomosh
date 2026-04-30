@@ -105,7 +105,7 @@ public class AtmService
         {
             return false;
         }
-
+ 
         var success = _bankService.Deposit(CurrentCard!.Account, amount, out message);
         if (!success)
         {
@@ -113,10 +113,30 @@ public class AtmService
             State.CurrentMessage = message;
             return false;
         }
+ 
+        State.CurrentMessage = message;
+        return true;
+    }
+
+    public bool TopUpPhone(string phoneNumber, decimal amount, out string message)
+    {
+        if (!CanProcessOperation(out message))
+        {
+            return false;
+        }
+
+        var success = _bankService.TopUpPhone(CurrentCard!.Account, phoneNumber, amount, out message);
+        if (!success)
+        {
+            _bankService.AddOperation(CurrentCard.Account, OperationType.Error, amount, $"Пополнение номера {phoneNumber}: {message}", false);
+            State.CurrentMessage = message;
+            return false;
+        }
 
         State.CurrentMessage = message;
         return true;
     }
+
 
     public List<Operation> GetHistory()
     {

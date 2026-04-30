@@ -43,12 +43,39 @@ public class BankService
             message = "Сумма должна быть больше нуля.";
             return false;
         }
-
+ 
         account.Balance += amount;
         AddOperation(account, OperationType.Deposit, amount, "Пополнение счета", true);
         message = $"Счет пополнен на {amount:F2} руб.";
         return true;
     }
+
+    public bool TopUpPhone(BankAccount account, string phoneNumber, decimal amount, out string message)
+    {
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            message = "Введите номер телефона.";
+            return false;
+        }
+
+        if (amount <= 0)
+        {
+            message = "Сумма должна быть больше нуля.";
+            return false;
+        }
+
+        if (account.Balance < amount)
+        {
+            message = "Недостаточно средств на счете для пополнения номера.";
+            return false;
+        }
+
+        account.Balance -= amount;
+        AddOperation(account, OperationType.PhoneTopUp, amount, $"Пополнение номера {phoneNumber}", true);
+        message = $"Номер {phoneNumber} пополнен на {amount:F2} руб.";
+        return true;
+    }
+
 
     public List<Operation> GetHistory(BankAccount account)
     {

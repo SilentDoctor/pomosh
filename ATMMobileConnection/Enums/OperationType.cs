@@ -7,5 +7,6 @@ public enum OperationType
     BalanceCheck,
     Withdraw,
     Deposit,
+    PhoneTopUp,
     Error
 }

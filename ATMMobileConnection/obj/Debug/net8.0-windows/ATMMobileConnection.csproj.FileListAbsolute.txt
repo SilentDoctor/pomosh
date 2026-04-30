@@ -12,3 +12,4 @@ C:\Users\nikit\Desktop\pomosh\ATMMobileConnection\obj\Debug\net8.0-windows\refin
 C:\Users\nikit\Desktop\pomosh\ATMMobileConnection\obj\Debug\net8.0-windows\ATMMobileConnection.pdb
 C:\Users\nikit\Desktop\pomosh\ATMMobileConnection\obj\Debug\net8.0-windows\ATMMobileConnection.genruntimeconfig.cache
 C:\Users\nikit\Desktop\pomosh\ATMMobileConnection\obj\Debug\net8.0-windows\ref\ATMMobileConnection.dll
+C:\Users\nikit\Desktop\pomosh\ATMMobileConnection\obj\Debug\net8.0-windows\ATMMobileConnection.sourcelink.json

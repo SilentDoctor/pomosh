@@ -14,6 +14,7 @@ public class MainForm : Form
     private readonly Label _lblAuthorized;
     private readonly Label _lblAtmMessage;
     private readonly Label _lblBalanceValue;
+    private readonly TextBox _txtPhoneNumber;
     private readonly TextBox _txtAmount;
     private readonly ListBox _lstLog;
 
@@ -78,24 +79,36 @@ public class MainForm : Form
         {
             Text = "Операции",
             Location = new Point(20, 150),
-            Size = new Size(370, 250)
+            Size = new Size(370, 290)
+        };
+
+        var lblPhoneNumber = new Label
+        {
+            Text = "Номер:",
+            AutoSize = true,
+            Location = new Point(20, 35)
+        };
+        _txtPhoneNumber = new TextBox
+        {
+            Location = new Point(90, 31),
+            Width = 250
         };
 
         var lblAmount = new Label
         {
             Text = "Сумма:",
             AutoSize = true,
-            Location = new Point(20, 35)
+            Location = new Point(20, 70)
         };
         _txtAmount = new TextBox
         {
-            Location = new Point(90, 31),
+            Location = new Point(90, 66),
             Width = 180
         };
 
-        var btn500 = new Button { Text = "500", Location = new Point(20, 70), Size = new Size(70, 30) };
-        var btn1000 = new Button { Text = "1000", Location = new Point(100, 70), Size = new Size(70, 30) };
-        var btn5000 = new Button { Text = "5000", Location = new Point(180, 70), Size = new Size(70, 30) };
+        var btn500 = new Button { Text = "500", Location = new Point(20, 105), Size = new Size(70, 30) };
+        var btn1000 = new Button { Text = "1000", Location = new Point(100, 105), Size = new Size(70, 30) };
+        var btn5000 = new Button { Text = "5000", Location = new Point(180, 105), Size = new Size(70, 30) };
 
         btn500.Click += (_, _) => _txtAmount.Text = "500";
         btn1000.Click += (_, _) => _txtAmount.Text = "1000";
@@ -104,7 +117,7 @@ public class MainForm : Form
         var btnBalance = new Button
         {
             Text = "Проверить баланс",
-            Location = new Point(20, 120),
+            Location = new Point(20, 150),
             Size = new Size(150, 35)
         };
         btnBalance.Click += BtnBalance_Click;
@@ -112,7 +125,7 @@ public class MainForm : Form
         var btnWithdraw = new Button
         {
             Text = "Снять наличные",
-            Location = new Point(190, 120),
+            Location = new Point(190, 150),
             Size = new Size(150, 35)
         };
         btnWithdraw.Click += BtnWithdraw_Click;
@@ -120,15 +133,23 @@ public class MainForm : Form
         var btnDeposit = new Button
         {
             Text = "Пополнить счет",
-            Location = new Point(20, 170),
+            Location = new Point(20, 195),
             Size = new Size(150, 35)
         };
         btnDeposit.Click += BtnDeposit_Click;
 
+        var btnTopUpPhone = new Button
+        {
+            Text = "Пополнить номер",
+            Location = new Point(190, 195),
+            Size = new Size(150, 35)
+        };
+        btnTopUpPhone.Click += BtnTopUpPhone_Click;
+
         var btnHistory = new Button
         {
             Text = "История операций",
-            Location = new Point(190, 170),
+            Location = new Point(20, 240),
             Size = new Size(150, 35)
         };
         btnHistory.Click += BtnHistory_Click;
@@ -136,15 +157,15 @@ public class MainForm : Form
         var btnLogout = new Button
         {
             Text = "Выход из аккаунта",
-            Location = new Point(105, 215),
+            Location = new Point(190, 240),
             Size = new Size(150, 35)
         };
         btnLogout.Click += BtnLogout_Click;
 
         groupOperations.Controls.AddRange(new Control[]
         {
-            lblAmount, _txtAmount, btn500, btn1000, btn5000,
-            btnBalance, btnWithdraw, btnDeposit, btnHistory, btnLogout
+            lblPhoneNumber, _txtPhoneNumber, lblAmount, _txtAmount, btn500, btn1000, btn5000,
+            btnBalance, btnWithdraw, btnDeposit, btnTopUpPhone, btnHistory, btnLogout
         });
 
         var groupState = new GroupBox
@@ -241,6 +262,26 @@ public class MainForm : Form
         ShowOperationError(message);
     }
 
+    private void BtnTopUpPhone_Click(object? sender, EventArgs e)
+    {
+        if (!TryParsePhoneNumber(out var phoneNumber) || !TryParseAmount(out var amount))
+        {
+            return;
+        }
+
+        if (_atmService.TopUpPhone(phoneNumber, amount, out var message))
+        {
+            AddLog(message);
+            RefreshBalanceText();
+            UpdateView();
+            MessageBox.Show("Номер пополнен.", "Успех", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
+
+        MessageBox.Show("Номер не пополнен.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        ShowOperationError(message);
+    }
+
     private void BtnHistory_Click(object? sender, EventArgs e)
     {
         using var historyForm = new HistoryForm(_atmService.GetHistory());
@@ -251,6 +292,20 @@ public class MainForm : Form
     {
         _atmService.Logout();
         Close();
+    }
+
+    private bool TryParsePhoneNumber(out string phoneNumber)
+    {
+        phoneNumber = _txtPhoneNumber.Text.Trim();
+        var normalizedPhone = phoneNumber.Replace("+", string.Empty).Replace("(", string.Empty).Replace(")", string.Empty).Replace("-", string.Empty).Replace(" ", string.Empty);
+
+        if (normalizedPhone.Length < 10 || !normalizedPhone.All(char.IsDigit))
+        {
+            MessageBox.Show("Введите корректный номер телефона.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return false;
+        }
+
+        return true;
     }
 
     private bool TryParseAmount(out decimal amount)
